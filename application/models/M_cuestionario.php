@@ -188,4 +188,137 @@ class M_cuestionario extends CI_Model {
 		return $query;
 	}
 
+	/*	Funciones para usar transacciones
+	======================================
+	*/
+	public function iniciar_transaccion()
+	{
+	  $con = $this->load->database('default',TRUE);
+	  $con->trans_begin();
+	  return  $con;
+	}
+
+	public function terminar_transaccion($con)
+	{
+		if ($con->trans_status() === FALSE)
+		{
+			$con->trans_rollback();
+			return false;
+		}
+		else 
+		{
+			$con->trans_commit();
+			return true;
+		}
+	}
+
+	public function insertar_registro($tabla,$datos,$con='')
+	{
+		if($con == '') $con = $this->db;
+
+		if($con->insert($tabla,$datos)) return $con->insert_id();
+		else return false;
+	}
+
+	public function insertar_registro_no_pk($tabla,$datos,$con='')
+	{
+		if($con == '') $con = $this->db;
+
+		if($con->insert($tabla,$datos)) return true;
+		else return false;
+	}
+
+	public function actualizar_registro($tabla,$where,$datos,$con='')
+	{
+		if($con == '') $con = $this->db;
+		$con->where($where);
+		return $con->update($tabla, $datos);
+	}
+
+	public function eliminar_registro($tabla,$where,$con)
+	{
+		return $con->delete($tabla,$where);
+	}
+
+	public function desactivar_registro($tabla,$where,$con='')
+	{
+		if($con == '') $con = $this->db;
+		$con->where($where);
+		return $con->update($tabla, array('iActivo' => 0));
+
+		return ($con->affected_rows() > 0);
+	}
+
+	public function activar_registro($tabla,$where,$con='')
+	{
+		if($con == '') $con = $this->db;
+		$con->where($where);
+		$con->update($tabla, array('iActivo' => 1));
+
+		return ($con->affected_rows() > 0);
+	}
+
+	/*	Funciones para usar transacciones
+	======================================
+	*/
+
+	public function cuestionarios($id=0)
+	{
+		$this->db->select('iIdCuestionario, vCuestionario, vDescripcion, iTipo');
+		$this->db->from('iplan_cuestionarios');
+		$this->db->where('iActivo',1);
+		if($id > 0) $this->db->where('iIdCuestionario',$id);
+		return $this->db->get();
+	}
+
+	public function preguntas($iIdCuestionario)
+	{
+		$this->db->select('iIdPregunta');
+		$this->db->from('iplan_preguntas');
+		$this->db->where('iActivo',1);
+		$this->db->where('iIdCuestionario',$iIdCuestionario);
+		
+		return $this->db->get();
+	}
+
+	public function campos_tabla_cuestionario()
+	{
+		$sql = "SHOW COLUMNS FROM iplan_cuestionarios FROM {$this->db->database};";
+		return $this->db->query($sql); 
+	}
+
+	public function pregunta($iIdPregunta)
+	{
+		$this->db->select('iIdPregunta, vPregunta, iEvidencia, iTipoPregunta, iNumero');
+		$this->db->from('iplan_preguntas');
+		$this->db->where('iActivo',1);
+		$this->db->where('iIdPregunta',$iIdPregunta);
+		
+		return $this->db->get()->row();
+	}
+
+	public function opciones($iIdPregunta)
+	{
+		$this->db->select('o.iIdOpcion, o.vOpcion, o.iTipoR, o.vValor, p.iTipoPregunta');
+		$this->db->from('iplan_opciones o');
+		$this->db->join('iplan_preguntas p','p.iIdPregunta = o.iIdPregunta','INNER');
+		$this->db->where('o.iIdPregunta',$iIdPregunta);
+		$this->db->where('o.iActivo',1);
+
+		$this->db->order_by('o.vValor');
+
+		return $this->db->get();
+	}
+
+	public function rangos($iIdPregunta)
+	{
+		$this->db->select('o.vValor, o.iLimiteMin, o.iLimiteMax');
+		$this->db->from('iplan_rangos o');
+		$this->db->where('o.iIdPregunta',$iIdPregunta);
+
+		$this->db->order_by('o.vValor');
+
+		return $this->db->get();
+	}
+
 }

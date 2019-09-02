@@ -85,3 +85,7 @@ $route['guarda_op'] = 'C_cuestionario/guarda_opcion';
 $route['calificar'] = 'C_sitio/calificar';
 $route['califica_us'] = 'C_sitio/calificar_usuario';
 $route['envia_calif'] = 'C_cuestionario/envia_calif';
+
+$route['listado-cuestionarios']  = 'C_cuestionario/listar_cuestionarios';
+$route['capturar_cuest'] = 'C_cuestionario/capturar_cuestionario';
+$route['capturar_preguntas'] = 'C_cuestionario/capturar_preguntas';

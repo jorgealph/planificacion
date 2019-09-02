@@ -8,7 +8,7 @@ class C_cuestionario extends CI_Controller {
 	{
 		parent::__construct();
 		$this->load->helper('url');
-		$this->load->model('M_cuestionario');
+		$this->load->model('M_cuestionario','mc');
 		$this->load->library('upload');
 		session_start();
 	}
@@ -244,4 +244,421 @@ class C_cuestionario extends CI_Controller {
 		}
 	}
 	
+
+	function listar_cuestionarios()
+	{
+		$datos['tabla'] = $this->tabla_cuestionarios();
+
+		$this->load->view('listado_cuestionarios',$datos);
+	}
+
+	function tabla_cuestionarios()
+	{
+		$cuestionarios = $this->mc->cuestionarios();
+
+
+		$html = ' <div class="table-responsive">                                 
+                    <table id="zero_config" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre del cuestionario</th>
+                                <th>Tipo</th>
+                                <th>Opciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>';
+         if($cuestionarios->num_rows() > 0)
+         {
+         	$cuestionarios = $cuestionarios->result();
+
+         	foreach ($cuestionarios as $cuestionario)
+         	{
+         		$cuestionario->iTipo = ($cuestionario->iTipo == 1) ? 'Entidad federativa':'Municipio';
+
+         		  $html.= '<tr id="cu_'.$cuestionario->iIdCuestionario.'"><td>'.$cuestionario->iIdCuestionario.'</td>
+                        <td>'.$cuestionario->vCuestionario.'</td>
+                        <td>'.$cuestionario->iTipo.'</td>
+                        <td>';
+                            
+                        $html.='<a href="javascript:" title="Editar" onclick="capturarCuestionario('.$cuestionario->iIdCuestionario.');"><i class="fas fa-pencil-alt"></i></a>&nbsp&nbsp&nbsp';
+
+                        $html.='<a href="javascript:" title="Eliminar" onclick="eliminarCuestionario('.$cuestionario->iIdCuestionario.');"><i class="fas fa-times"></i></a>&nbsp&nbsp&nbsp';                              
+
+                    $html.= '</td>
+                    </tr>';
+         	}
+         }
+
+
+        $html .= '		</tbody>
+        			</table>
+        		</div>';
+
+        return $html;                 
+	}
+
+	function capturar_cuestionario()
+	{
+		$iIdCuestionario = (isset($_GET['cuestid']) && !empty($_GET['cuestid'])) ? $_GET['cuestid']:0;
+		$datos['iIdCuestionario'] = $iIdCuestionario;
+
+
+		if($iIdCuestionario == 0)
+		{
+			$d_cuestionario = array('vCuestionario' => '', 'vDescripcion' => '');
+			$iIdCuestionario = $this->mc->insertar_registro('iplan_cuestionarios',$d_cuestionario);
+		}
+
+
+		$query = $this->mc->cuestionarios($iIdCuestionario);
+		$query = $query->row();
+		foreach ($query as $campo => $valor)
+        {
+            $datos[$campo] = $valor;
+        }		
+
+		$qpreguntas = $this->mc->preguntas($iIdCuestionario);
+		
+		$qpreguntas = $qpreguntas->result();
+
+		$datos['preguntas'] = '';
+
+		foreach ($qpreguntas as $pregunta) {
+			$datos['preguntas'].= $this->html_pregunta($pregunta->iIdPregunta);
+		}
+
+		$this->load->view('form_captura_cuestionario',$datos);
+
+	}
+
+	function guardar_cuestionario()
+	{
+		$datos = array(	'vCuestionario' => $this->input->post('vCuestionario'),
+						'vDescripcion' => '',
+						'iTipo' => $this->input->post('iTipo'),
+						'iActivo' => 1 );
+		$where['iIdCuestionario'] = $this->input->post('iIdCuestionario');
+
+		$con = $this->mc->iniciar_transaccion();
+		$iIdCuestionario = $this->mc->actualizar_registro('iplan_cuestionarios',$where,$datos,$con);
+
+		if($this->mc->terminar_transaccion($con)) echo '1';
+		else echo 'Los cambios no pudieron ser guardados';
+	}
+
+	public function crear_pregunta()
+	{
+		if(isset($_POST['iIdCuestionario']) && !empty($_POST['iIdCuestionario']))
+		{
+			$datos = array(	'vPregunta' => '', 'iTipoPregunta' => 0,'iIdCuestionario' => $this->input->post('iIdCuestionario'));
+
+			$con = $this->mc->iniciar_transaccion();
+
+			$iIdPregunta = $this->mc->insertar_registro('iplan_preguntas',$datos,$con);
+
+			$opcion1 = array( 'vOpcion' => 'Opcion 1' , 'iIdPregunta' => $iIdPregunta, 'vValor' => 0);
+			$opcion2 = array( 'vOpcion' => 'Opcion 2' , 'iIdPregunta' => $iIdPregunta, 'vValor' => 1);
+			$opcion3 = array( 'vOpcion' => 'Opcion 3' , 'iIdPregunta' => $iIdPregunta, 'vValor' => 2);
+			$opcion4 = array( 'vOpcion' => 'Opcion 4' , 'iIdPregunta' => $iIdPregunta, 'vValor' => 3);
+
+			$iIdOpcion1 = $this->mc->insertar_registro('iplan_opciones',$opcion1,$con);
+			$iIdOpcion2 = $this->mc->insertar_registro('iplan_opciones',$opcion2,$con);
+			$iIdOpcion3 = $this->mc->insertar_registro('iplan_opciones',$opcion3,$con);
+			$iIdOpcion4 = $this->mc->insertar_registro('iplan_opciones',$opcion4,$con);
+
+			$rango1 = array( 'vValor' => 0 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => 0, 'iLimiteMax' => 0);
+			$rango2 = array( 'vValor' => 1 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => 0, 'iLimiteMax' => 0);
+			$rango3 = array( 'vValor' => 2 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => 0, 'iLimiteMax' => 0);
+			$rango4 = array( 'vValor' => 3 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => 0, 'iLimiteMax' => 0);
+			
+
+			$iIdOpcion1 = $this->mc->insertar_registro('iplan_rangos',$rango1,$con);
+			$iIdOpcion2 = $this->mc->insertar_registro('iplan_rangos',$rango2,$con);
+			$iIdOpcion3 = $this->mc->insertar_registro('iplan_rangos',$rango3,$con);
+			$iIdOpcion4 = $this->mc->insertar_registro('iplan_rangos',$rango4,$con);
+
+			if($this->mc->terminar_transaccion($con) > 0) echo '1-'.$iIdPregunta;
+			else echo '0-La pregunta no pudo ser creada'; 
+		}
+		
+	}
+
+	public function agregar_opcion()
+	{
+		if(isset($_POST['iIdPregunta']) && !empty($_POST['iIdPregunta']))
+		{
+			$iIdPregunta = $this->input->post('iIdPregunta');
+			$opcion1 = array( 'vOpcion' => 'Respuesta' , 'iIdPregunta' => $iIdPregunta, 'vValor' => -1);
+			
+			$iIdOpcion = $this->mc->insertar_registro('iplan_opciones',$opcion1);
+			
+			if($iIdOpcion > 1) echo '1';
+			else echo 'La pregunta no pudo ser creada'; 
+		}
+		
+	}
+
+	function guardar_texto_pregunta(){
+		if(isset($_POST['iIdPregunta']) && !empty($_POST['iIdPregunta']))
+		{
+			$datos['vPregunta'] = $this->input->post('vPregunta');
+			$where['iIdPregunta'] = $this->input->post('iIdPregunta');
+			$this->mc->actualizar_registro('iplan_preguntas',$where,$datos);
+		}
+	}
+
+	function guardar_texto_opcion(){
+		if(isset($_POST['iIdOpcion']) && !empty($_POST['iIdOpcion']))
+		{
+			$datos['vOpcion'] = $this->input->post('vOpcion');
+			$where['iIdOpcion'] = $this->input->post('iIdOpcion');
+			$this->mc->actualizar_registro('iplan_opciones',$where,$datos);
+		}
+	}
+
+	public function mostrar_pregunta($iIdPregunta)
+	{
+		echo $this->html_pregunta($iIdPregunta);
+	}
+
+	public function mostrar_opciones($iIdPregunta)
+	{
+		echo $this->html_opciones($iIdPregunta);
+	}
+
+	public function html_pregunta($iIdPregunta)
+	{
+		$p = $this->mc->pregunta($iIdPregunta);
+		$sel1 = ($p->iTipoPregunta == 0) ? 'selected':'';
+		$sel2 = ($p->iTipoPregunta == 1) ? 'selected':'';
+		$sel3 = ($p->iTipoPregunta == 2) ? 'selected':'';
+		$sel4 = ($p->iTipoPregunta == 3) ? 'selected':'';
+
+		$html = '<div class="card" id="div-pregunta-'.$p->iIdPregunta.'"> 
+					<div class="card-body">
+					<form name="form-preg'.$p->iIdPregunta.'" id="form-preg'.$p->iIdPregunta.'">
+						<div class="row">
+							<div class="col-md-12 text-right"><i style="cursor:pointer;" title="Elimnar pregunta" onclick="eliminarPregunta('.$p->iIdPregunta.');" class="fas fa-times"></i></div>
+						</div>
+	                    <div class="row">
+	                        <div class="col-md-12">
+	                            <div class="form-group">
+	                                <input type="hidden" name="iIdPregunta" id="iIdPregunta" value="'.$p->iIdPregunta.'">
+	                                <input type="text" class="form-control required" id="vPregunta" name="vPregunta" value="'.$p->vPregunta.'" onblur="guardarTextoPregunta('.$p->iIdPregunta.');" placeholder="Escriba aquí su pregunta">
+	                            </div>
+	                        </div>
+	                    </div>
+	                    <div class="row">
+                            <div class="col-md-12">
+                                 <div class="form-group">
+                                    <label for="iTipo"> Tipo de pregunta: <span class="text-danger">*</span> </label>
+                                    <select name="iTipo" id="iTipo" class="form-control" onchange="cambiarTipoPregunta('.$p->iIdPregunta.');">
+                                        <option value="0" '.$sel1.'>Opción multiple</option>
+                                        <option value="1" '.$sel2.'>Dicotómica</option>
+                                        <option value="2" '.$sel3.'>Abierta</option>
+                                        <option value="3" '.$sel4.'>Selección multiple</option>
+                                    </select>
+                                </div>
+                            </div>  
+                        </div>
+	                </form>';
+
+       
+
+	    $html.= '<div class="row">
+	    			<div id="div-opciones'.$p->iIdPregunta.'" class="col-md-7">'.$this->html_opciones($p->iIdPregunta).'</div>';
+
+	    if($p->iTipoPregunta == 3)
+	    {
+	    	$html.= '<div id="div-rangos'.$p->iIdPregunta.'" class="col-md-5">'.$this->html_rangos($iIdPregunta).'</div>';
+	    }
+
+	    $html.=	'</div>
+	    		</div>
+	    	</div>';
+
+	    return $html;
+	}
+
+	public function html_rangos($iIdPregunta)
+	{
+		$html = '';
+		$query = $this->mc->rangos($iIdPregunta);
+		$query = $query->result();
+		foreach ($query as $p)
+		{
+			$html.= '<div class="row">
+						
+						<div class="col-md-6">
+							<input type="text" class="form-control" value="'.$p->iLimiteMin.'">
+						</div>
+						<div class="col-md-6">
+							<input type="text" class="form-control" value="'.$p->iLimiteMax.'">
+						</div>
+					</div>';
+		}
+
+		return $html;
+	}
+
+
+	public function html_opciones($iIdPregunta)
+	{
+		$html = '';
+		$query = $this->mc->opciones($iIdPregunta);
+		$query = $query->result();
+		$bandera = true;
+
+		foreach ($query as $p)
+		{
+			$html.= '';
+			if($p->iTipoPregunta == 0)	// Opcion múltiple (4 radio)
+			{
+				$html.= '<form name="form-op'.$p->iIdOpcion.'" id="form-op'.$p->iIdOpcion.'">
+						<div class="form-group">
+						<div class="custom-control custom-radio">
+							<input type="hidden" name="iIdOpcion" id="iIdOpcion" value="'.$p->iIdOpcion.'">
+		                    <input type="radio" class="custom-control-input">
+		                    <label class="custom-control-label" for="customRadio1"><input type="text" class="form-control" name="vOpcion" id="vOpcion" value="'.$p->vOpcion.'" onblur="guardarTextoOpcion('.$p->iIdOpcion.');"><small>Puntaje: '.$p->vValor.'</small></label>
+		                </div>
+		                </div>
+		                </form>'; 
+            }
+
+            if($p->iTipoPregunta == 1)	// Dicotómica (2 radio)
+			{
+				$html.= '<form name="form-op'.$p->iIdOpcion.'" id="form-op'.$p->iIdOpcion.'">
+						<div class="form-group">
+						<div class="custom-control custom-radio">
+							<input type="hidden" name="iIdOpcion" id="iIdOpcion" value="'.$p->iIdOpcion.'">
+		                    <input type="radio" class="custom-control-input">
+		                    <label class="custom-control-label" for="customRadio1"><input type="text" class="form-control" name="vOpcion" id="vOpcion" value="'.$p->vOpcion.'" onblur="guardarTextoOpcion('.$p->iIdOpcion.');"><small>Puntaje: '.$p->vValor.'</small></label>
+		                </div>
+		                </div>
+		                </form>'; 
+            }
+
+            if($p->iTipoPregunta == 2)	// Abierta (text)
+			{
+				$html.= '<form name="form-op'.$p->iIdOpcion.'" id="form-op'.$p->iIdOpcion.'">
+						<div class="form-group">
+						<div class="custom-control custom-radio">
+							<input type="hidden" name="iIdOpcion" id="iIdOpcion" value="'.$p->iIdOpcion.'">
+		                    <textarea class="form-control" name="" id="" disabled></textarea>
+		                    <small>Puntaje: '.$p->vValor.'</small>
+		                </div>
+		                </div>
+		                </form>'; 
+            }
+
+            if($p->iTipoPregunta == 3)	// Selección múltiple (check)
+			{
+				if($bandera)
+				{
+					$bandera = false;
+					$html.= '<div class="row">
+	                    <div class="col-md-12"><button class="btn btn-success" onclick="agregarOpcion('.$iIdPregunta.');" ><i class="fas fa-plus"></i>&nbsp;Agregar opción</button></div>
+		    		</div> <br>';
+		    	}
+
+            	$html.= '<form name="form-op'.$p->iIdOpcion.'" id="form-op'.$p->iIdOpcion.'">
+            			<div class="form-group">
+        				<div class="custom-control custom-checkbox">
+        					<input type="hidden" name="iIdOpcion" id="iIdOpcion" value="'.$p->iIdOpcion.'">
+                            <input type="checkbox" class="custom-control-input">
+                            <label class="custom-control-label" for="customCheck3"><input type="text" class="form-control" name="vOpcion" id="vOpcion" value="'.$p->vOpcion.'" onblur="guardarTextoOpcion('.$p->iIdOpcion.');"></label> <i style="cursor:pointer;" class="fas fa-times" title="Eliminar opción" onclick="eliminarOpcion('.$p->iIdOpcion.','.$iIdPregunta.');"></i>
+                        </div>
+                        </div>
+                        </form>';
+          	}
+
+          	$html.= '';
+		}
+
+		return $html;
+	}
+
+	public function cambiar_tipo_pregunta()
+	{
+		if(isset($_POST['iIdPregunta']) && !empty($_POST['iIdPregunta']))
+		{
+			$dTipo['iTipoPregunta'] = $iTipoPregunta = $this->input->post('iTipo');
+			$datos = array('iActivo' => 0);
+			$where = 'iIdPregunta = '.$this->input->post('iIdPregunta');
+
+			$con = $this->mc->iniciar_transaccion();
+			//	Actualizamos el tipo de pregunta
+			$this->mc->actualizar_registro('iplan_preguntas',$where,$dTipo,$con);
+
+			//Borramos todas las opciones
+			$this->mc->actualizar_registro('iplan_opciones',$where,$datos,$con);
+
+			//Activamos las respuestas en base al tipo
+			if($iTipoPregunta == 0)
+			{
+				$datos['iActivo'] = 1;
+				$where.= ' AND vValor IN(0,1,2,3)';
+				$this->mc->actualizar_registro('iplan_opciones',$where,$datos,$con);
+			} 
+
+			if($iTipoPregunta == 1)
+			{
+				$datos['iActivo'] = 1;
+				$where.= ' AND vValor IN(0,3)';
+				$this->mc->actualizar_registro('iplan_opciones',$where,$datos,$con);
+			}
+
+			if($iTipoPregunta == 2)
+			{
+				$datos['iActivo'] = 1;
+				$where.= ' AND vValor = 3';
+				$this->mc->actualizar_registro('iplan_opciones',$where,$datos,$con);
+			} 
+
+			if($iTipoPregunta == 3)
+			{
+				$datos['iActivo'] = 1;
+				$this->mc->actualizar_registro('iplan_opciones',$where,$datos,$con);
+			} 
+
+			if($this->mc->terminar_transaccion($con)) echo '1';
+			else echo 'Los datos no puedieron actualizarse';
+		}
+	}
+
+	public function eliminar_cuestionario()
+	{
+		if(isset($_POST['id']) && !empty($_POST['id']))
+		{
+			
+			$where['iIdCuestionario'] = $this->input->post('id');
+
+			if($this->mc->desactivar_registro('iplan_cuestionarios',$where) > 0) echo '1';
+			else echo 'El registro no pudo ser eliminado';
+		}
+	}
+
+	public function eliminar_pregunta()
+	{
+		if(isset($_POST['iIdPregunta']) && !empty($_POST['iIdPregunta']))
+		{
+			
+			$where['iIdPregunta'] = $this->input->post('iIdPregunta');
+
+			if($this->mc->desactivar_registro('iplan_preguntas',$where) > 0) echo '1';
+			else echo 'El registro no pudo ser eliminado';
+		}
+	}
+
+	public function eliminar_opcion()
+	{
+		if(isset($_POST['iIdOpcion']) && !empty($_POST['iIdOpcion']))
+		{			
+			$where['iIdOpcion'] = $this->input->post('iIdOpcion');
+
+			if($this->mc->desactivar_registro('iplan_opciones',$where) > 0) echo '1';
+			else echo 'El registro no pudo ser eliminado';
+		} else {echo 'noentro';}
+	}
 }
