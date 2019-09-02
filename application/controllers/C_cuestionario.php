@@ -373,10 +373,22 @@ class C_cuestionario extends CI_Controller {
 			$rango4 = array( 'vValor' => 3 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => 0, 'iLimiteMax' => 0);
 			
 
-			$iIdOpcion1 = $this->mc->insertar_registro('iplan_rangos',$rango1,$con);
-			$iIdOpcion2 = $this->mc->insertar_registro('iplan_rangos',$rango2,$con);
-			$iIdOpcion3 = $this->mc->insertar_registro('iplan_rangos',$rango3,$con);
-			$iIdOpcion4 = $this->mc->insertar_registro('iplan_rangos',$rango4,$con);
+			$iIdRango1 = $this->mc->insertar_registro('iplan_rangos',$rango1,$con);
+			$iIdRango2 = $this->mc->insertar_registro('iplan_rangos',$rango2,$con);
+			$iIdRango3 = $this->mc->insertar_registro('iplan_rangos',$rango3,$con);
+			$iIdRango4 = $this->mc->insertar_registro('iplan_rangos',$rango4,$con);
+
+			//	-- 
+			//	Insertamos la configuración
+			$respuesta1 = array('iIdPregunta' => $iIdPregunta, 'iIdOpcion' => $iIdOpcion1);
+			$respuesta2 = array('iIdPregunta' => $iIdPregunta, 'iIdOpcion' => $iIdOpcion2);
+			$respuesta3 = array('iIdPregunta' => $iIdPregunta, 'iIdOpcion' => $iIdOpcion3);
+			$respuesta4 = array('iIdPregunta' => $iIdPregunta, 'iIdOpcion' => $iIdOpcion4);
+
+			$iIdRespuesta1 = $this->mc->insertar_registro('iplan_respuestas',$respuesta1,$con);
+			$iIdRespuesta2 = $this->mc->insertar_registro('iplan_respuestas',$respuesta2,$con);
+			$iIdRespuesta3 = $this->mc->insertar_registro('iplan_respuestas',$respuesta3,$con);
+			$iIdRespuesta4 = $this->mc->insertar_registro('iplan_respuestas',$respuesta4,$con);
 
 			if($this->mc->terminar_transaccion($con) > 0) echo '1-'.$iIdPregunta;
 			else echo '0-La pregunta no pudo ser creada'; 
@@ -389,11 +401,20 @@ class C_cuestionario extends CI_Controller {
 		if(isset($_POST['iIdPregunta']) && !empty($_POST['iIdPregunta']))
 		{
 			$iIdPregunta = $this->input->post('iIdPregunta');
-			$opcion1 = array( 'vOpcion' => '' , 'iIdPregunta' => $iIdPregunta, 'vValor' => -1);
 			
-			$iIdOpcion = $this->mc->insertar_registro('iplan_opciones',$opcion1);
-			
-			if($iIdOpcion > 1) echo '1';
+			//	Iniciamos la transacción
+			$con = $this->mc->iniciar_transaccion();
+
+			//	Insertamos la opción
+			$opcion = array( 'vOpcion' => '' , 'iIdPregunta' => $iIdPregunta, 'vValor' => -1);
+			$iIdOpcion = $this->mc->insertar_registro('iplan_opciones',$opcion,$con);
+
+			//	Insertamos la configuración
+			$respuesta = array('iIdPregunta' => $this->input->post('iIdPregunta'), 'iIdOpcion' => $iIdOpcion);
+			$iIdRespuesta = $this->mc->insertar_registro('iplan_respuestas',$respuesta,$con);
+
+			//	Terminar transacción
+			if($this->mc->terminar_transaccion($con)) echo '1';
 			else echo 'La pregunta no pudo ser creada'; 
 		}
 		
@@ -687,7 +708,13 @@ class C_cuestionario extends CI_Controller {
 		{			
 			$where['iIdOpcion'] = $this->input->post('iIdOpcion');
 
-			if($this->mc->desactivar_registro('iplan_opciones',$where) > 0) echo '1';
+			$con = $this->mc->iniciar_transaccion();
+
+			// Eliminamos la opción del catálogo
+			$this->mc->desactivar_registro('iplan_opciones',$where,$con);
+			//	Eliminas de la configuración
+			$this->mc->desactivar_registro('iplan_respuestas',$where,$con);
+			if( $this->mc->terminar_transaccion($con) ) echo '1';
 			else echo 'El registro no pudo ser eliminado';
 		} else {echo 'noentro';}
 	}
