@@ -49,6 +49,7 @@ class C_sitio extends CI_Controller {
 				$_SESSION['usuario']['usid'] = $resp[0]->iIdUsuario;
 				$_SESSION['usuario']['nom'] = $usuario;
 				$_SESSION['usuario']['tipo'] = $resp[0]->iTipoUsuario;
+				$_SESSION['usuario']['tipo_proced'] = $resp[0]->iTipo;
 
 
 			}
@@ -132,11 +133,18 @@ class C_sitio extends CI_Controller {
 	public function cuestionario()
 	{
 		$usid = $_SESSION['usuario']['usid'];
+		$tipo_us = $_SESSION['usuario']['tipo'];
+		
+		if($tipo_us==1) $tipo_proced = 0;
+		else $tipo_proced = $_SESSION['usuario']['tipo_proced'];
+
 		if(!isset($_SESSION['usuario'])) header('Location: '.base_url());
 		else
 		{	
 			$model = new M_cuestionario();
-			$preguntas = $model->carga_preguntas();
+			$datos['cuest'] = $model->carga_cuestionarios($tipo_proced);
+
+			/*$preguntas = $model->carga_preguntas();
 			if($preguntas!=false && count($preguntas) > 0)
 			{
 				$datos['preguntas'] = $preguntas;
@@ -166,8 +174,54 @@ class C_sitio extends CI_Controller {
 			else $datos['respuestas'] = false;
 
 			$this->load->view('cuestionario',$datos);		
+			*/
+			$this->load->view('tabla_cuest',$datos);
 		}
 
+	}
+
+	public function resp_cuestionario()
+	{
+		$cuestid = $this->input->get('cuestid', TRUE);
+
+		$usid = $_SESSION['usuario']['usid'];		
+
+		if(!isset($_SESSION['usuario'])) header('Location: '.base_url());
+		else
+		{	
+			$model = new M_cuestionario();
+
+			$preguntas = $model->carga_preguntas($cuestid);
+			if($preguntas!=false && count($preguntas) > 0)
+			{
+				$datos['preguntas'] = $preguntas;
+				foreach ($preguntas as $vpreg) {
+					$pregid = $vpreg->iIdPregunta;
+					$resp_cal = $model->obtener_resp($pregid, $usid, 1);
+					if($resp_cal!=false && count($resp_cal) > 0)
+					{
+						$vpreg->iCalificacion = $resp_cal[0]->iCalificacion;
+						$vpreg->vArchivo = $resp_cal[0]->vArchivo;						
+					}
+					else 
+					{
+						$vpreg->iCalificacion = 0;
+						$vpreg->vArchivo = '';
+					}
+				}
+
+			}
+			else $datos['preguntas'] = false;
+
+
+
+
+			$resp = $model->resp_usuario($usid);
+			if($resp!=false && count($resp) > 0) $datos['respuestas'] = $resp;
+			else $datos['respuestas'] = false;
+
+			$this->load->view('cuestionario',$datos);
+		}
 	}
 
 	public function calificar()

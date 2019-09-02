@@ -258,6 +258,18 @@ class M_cuestionario extends CI_Model {
 		return ($con->affected_rows() > 0);
 	}
 
+	public function carga_cuestionarios($tipo_proced)
+	{		
+		$this->db->select('iIdCuestionario,vCuestionario,vDescripcion');
+		$this->db->from('iplan_cuestionarios');
+		$this->db->where('iActivo',1);
+		if($tipo_proced > 0) $this->db->where('iTipo',$tipo_proced);
+
+		$query = $this->db->get();
+		if($query!=false) return $query->result();
+		else return false;
+	}
+
 	/*	Funciones para usar transacciones
 	======================================
 	*/

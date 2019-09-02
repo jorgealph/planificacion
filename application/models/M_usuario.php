@@ -10,7 +10,7 @@ class M_usuario extends CI_Model {
 
 	public function inicia_sesion($usuario)
 	{	
-		$this->db->select('vContrasenia,iTipoUsuario,iIdUsuario');
+		$this->db->select('vContrasenia,iTipoUsuario,iIdUsuario,iTipo');
 		$this->db->from('iplan_usuarios');
 		$this->db->where('vNombreUsuario',$usuario);
 		$query = $this->db->get();
