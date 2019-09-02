@@ -187,10 +187,20 @@
             });
         }
 
+        function guardarRango(iIdPregunta,vValor){
+            $.post('<?=base_url();?>C_cuestionario/guardar_rango',$('#form-rango-'+iIdPregunta+'-'+vValor).serialize(), function(resp){
+                if(resp==1) { 
+                    
+                }
+            });
+        }
+
         function cambiarTipoPregunta(iIdPregunta){
             $.post('<?=base_url();?>C_cuestionario/cambiar_tipo_pregunta', $('#form-preg'+iIdPregunta).serialize(), function(resp){
                 if(resp==1) { 
                     mostrarOpciones(iIdPregunta);
+                    
+                    $("#div-rangos"+iIdPregunta).show();
                 } else {
                     Swal.fire({
                       type: 'error',

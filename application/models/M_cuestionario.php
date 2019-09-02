@@ -305,7 +305,7 @@ class M_cuestionario extends CI_Model {
 		$this->db->where('o.iIdPregunta',$iIdPregunta);
 		$this->db->where('o.iActivo',1);
 
-		$this->db->order_by('o.vValor');
+		$this->db->order_by('o.iIdOpcion');
 
 		return $this->db->get();
 	}

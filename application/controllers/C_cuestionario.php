@@ -389,7 +389,7 @@ class C_cuestionario extends CI_Controller {
 		if(isset($_POST['iIdPregunta']) && !empty($_POST['iIdPregunta']))
 		{
 			$iIdPregunta = $this->input->post('iIdPregunta');
-			$opcion1 = array( 'vOpcion' => 'Respuesta' , 'iIdPregunta' => $iIdPregunta, 'vValor' => -1);
+			$opcion1 = array( 'vOpcion' => '' , 'iIdPregunta' => $iIdPregunta, 'vValor' => -1);
 			
 			$iIdOpcion = $this->mc->insertar_registro('iplan_opciones',$opcion1);
 			
@@ -414,6 +414,17 @@ class C_cuestionario extends CI_Controller {
 			$datos['vOpcion'] = $this->input->post('vOpcion');
 			$where['iIdOpcion'] = $this->input->post('iIdOpcion');
 			$this->mc->actualizar_registro('iplan_opciones',$where,$datos);
+		}
+	}
+
+	function guardar_rango(){
+		if(isset($_POST['iIdPregunta']) && !empty($_POST['iIdPregunta']))
+		{
+			$datos = array( 'iLimiteMin' => $this->input->post('iLimiteMin'));
+			$where['iIdPregunta'] = $this->input->post('iIdPregunta');
+			$where['vValor'] = $this->input->post('vValor');
+			if($this->mc->actualizar_registro('iplan_rangos',$where,$datos)) echo 1;
+			else echo 'El registro no pudo ser actualizado';
 		}
 	}
 
@@ -467,12 +478,12 @@ class C_cuestionario extends CI_Controller {
        
 
 	    $html.= '<div class="row">
-	    			<div id="div-opciones'.$p->iIdPregunta.'" class="col-md-7">'.$this->html_opciones($p->iIdPregunta).'</div>';
+	    			<div id="div-opciones'.$p->iIdPregunta.'" class="col-md-12">'.$this->html_opciones($p->iIdPregunta).'</div>';
 
-	    if($p->iTipoPregunta == 3)
+	   	/* if($p->iTipoPregunta == 3)
 	    {
 	    	$html.= '<div id="div-rangos'.$p->iIdPregunta.'" class="col-md-5">'.$this->html_rangos($iIdPregunta).'</div>';
-	    }
+	    }*/
 
 	    $html.=	'</div>
 	    		</div>
@@ -486,17 +497,21 @@ class C_cuestionario extends CI_Controller {
 		$html = '';
 		$query = $this->mc->rangos($iIdPregunta);
 		$query = $query->result();
+		$html .=  '<div class="row">
+						<div class="col-md-12">Valor de las preguntas</b></div>
+					</div>';
 		foreach ($query as $p)
 		{
-			$html.= '<div class="row">
-						
-						<div class="col-md-6">
-							<input type="text" class="form-control" value="'.$p->iLimiteMin.'">
+			$html.= '<form name="form-rango-'.$iIdPregunta.'-'.$p->vValor.'" id="form-rango-'.$iIdPregunta.'-'.$p->vValor.'">
+					<div class="row">
+						<div class="col-md-12">
+							<input type ="hidden" name="iIdPregunta" value="'.$iIdPregunta.'">
+							<input type ="hidden" name="vValor" value="'.$p->vValor.'">
+							<input name="iLimiteMin" id="iLimiteMin" type="text" class="form-control" value="'.$p->iLimiteMin.'"placeholder="Ej: 0, 1-2" onblur="guardarRango('.$iIdPregunta.','.$p->vValor.');">
+							<small>Puntaje: '.$p->vValor.' </small>
 						</div>
-						<div class="col-md-6">
-							<input type="text" class="form-control" value="'.$p->iLimiteMax.'">
-						</div>
-					</div>';
+					</div>
+					</form>';
 		}
 
 		return $html;
@@ -508,10 +523,15 @@ class C_cuestionario extends CI_Controller {
 		$html = '';
 		$query = $this->mc->opciones($iIdPregunta);
 		$query = $query->result();
-		$bandera = true;
+		$bandera = false;
+
+		$tipo = 0;
+		$html.= '<div class="row">
+					<div class="col-md-7">';
 
 		foreach ($query as $p)
 		{
+			$tipo = $p->iTipoPregunta;
 			$html.= '';
 			if($p->iTipoPregunta == 0)	// Opcion múltiple (4 radio)
 			{
@@ -554,14 +574,7 @@ class C_cuestionario extends CI_Controller {
 
             if($p->iTipoPregunta == 3)	// Selección múltiple (check)
 			{
-				if($bandera)
-				{
-					$bandera = false;
-					$html.= '<div class="row">
-	                    <div class="col-md-12"><button class="btn btn-success" onclick="agregarOpcion('.$iIdPregunta.');" ><i class="fas fa-plus"></i>&nbsp;Agregar opción</button></div>
-		    		</div> <br>';
-		    	}
-
+				$bandera = true;
             	$html.= '<form name="form-op'.$p->iIdOpcion.'" id="form-op'.$p->iIdOpcion.'">
             			<div class="form-group">
         				<div class="custom-control custom-checkbox">
@@ -572,9 +585,26 @@ class C_cuestionario extends CI_Controller {
                         </div>
                         </form>';
           	}
-
-          	$html.= '';
+          	
 		}
+
+
+        if($bandera)
+		{
+			$bandera = false;
+			$html.= '<div class="row">
+                <div class="col-md-12"><button class="btn btn-success" onclick="agregarOpcion('.$iIdPregunta.');" ><i class="fas fa-plus"></i>&nbsp;Agregar opción</button></div>
+    		</div> <br>';
+    	}
+
+		$html.= '</div>';
+
+		if($tipo == 3)
+		{
+			$html.= '<div id="div-rangos'.$iIdPregunta.'" class="col-md-5">'.$this->html_rangos($iIdPregunta).'</div>';
+		}
+
+		$html.= '</div>';
 
 		return $html;
 	}
