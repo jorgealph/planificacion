@@ -48,7 +48,7 @@
                     <!-- Form -->
                     <div class="row">
                         <div class="col-12">
-                            <form class="form-horizontal m-t-20" id="form-login">
+                            <form class="form-horizontal m-t-20" id="form-login" onsubmit="login(event);">
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="basic-addon1"><i class="ti-user"></i></span>
@@ -63,7 +63,7 @@
                                 </div>                                
                                 <div class="form-group text-center">
                                     <div class="col-xs-12 p-b-20">
-                                        <button class="btn btn-block btn-lg btn-info" type="button" onclick="login();">Iniciar</button>
+                                        <button class="btn btn-block btn-lg btn-info" type="submit">Iniciar</button>
                                     </div>
                                 </div>                                
                             </form>
@@ -129,7 +129,8 @@
     $('[data-toggle="tooltip"]').tooltip();
     $(".preloader").fadeOut();
     
-    function login() {
+    function login(e) {
+        e.preventDefault();
         $.post('<?=base_url();?>iniciar', $('#form-login').serialize(), function(resp){       
             switch(resp) {
                 case 'success':

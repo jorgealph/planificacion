@@ -186,6 +186,14 @@
                 }
             });
         }
+        
+        function guardarOtro(iIdOpcion){
+            $.post('<?=base_url();?>C_cuestionario/guardar_otro', $('#form-op'+iIdOpcion).serialize(), function(resp){
+                if(resp==1) { 
+                    
+                }
+            });
+        }
 
         function guardarRango(iIdPregunta,vValor){
             $.post('<?=base_url();?>C_cuestionario/guardar_rango',$('#form-rango-'+iIdPregunta+'-'+vValor).serialize(), function(resp){

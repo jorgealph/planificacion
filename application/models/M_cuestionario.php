@@ -329,7 +329,7 @@ class M_cuestionario extends CI_Model {
 
 	public function opciones($iIdPregunta)
 	{
-		$this->db->select('o.iIdOpcion, o.vOpcion, o.iTipoR, o.vValor, p.iTipoPregunta');
+		$this->db->select('o.iIdOpcion, o.vOpcion, o.iTipoR, o.vValor, p.iTipoPregunta, o.iOtro');
 		$this->db->from('iplan_opciones o');
 		$this->db->join('iplan_preguntas p','p.iIdPregunta = o.iIdPregunta','INNER');
 		$this->db->where('o.iIdPregunta',$iIdPregunta);
