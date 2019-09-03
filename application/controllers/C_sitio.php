@@ -191,7 +191,7 @@ class C_sitio extends CI_Controller {
 		{	
 			$model = new M_cuestionario();
 
-			$preguntas = $model->carga_preguntas($cuestid);
+			$preguntas = $model->carga_preguntas(0,0,$cuestid);
 			if($preguntas!=false && count($preguntas) > 0)
 			{
 				$datos['preguntas'] = $preguntas;

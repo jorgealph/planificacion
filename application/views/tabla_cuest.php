@@ -91,7 +91,7 @@
                                                             <td>'.$vcuest->iIdCuestionario.'</td>
                                                             <td>'.$vcuest->vCuestionario.'</td>
                                                             <td>'.$vcuest->vDescripcion.'</td>                                                            
-                                                            <td><a href="javascript:" onclick="mod_preg('.$vcuest->iIdCuestionario.');"><i class="fas fa-pencil-alt"></i></a></td>
+                                                            <td><a href="'.base_url().'responder?cuestid='.$vcuest->iIdCuestionario.'"><i class="fas fa-pencil-alt"></i></a></td>
                                                         </tr>
                                                         ';
                                                     }

@@ -23,8 +23,11 @@ class C_cuestionario extends CI_Controller {
 			$archivo = array();
 			$res = array();
 			$ids = array();
-			foreach ($_POST as $key => $value) {
+			//var_dump($_POST);
+			foreach ($_POST as $key => $value) {	
 				//echo 'key: '.$key;
+				
+
 				
 				$c = substr($key, 0, 3);			
 
@@ -41,13 +44,35 @@ class C_cuestionario extends CI_Controller {
 				}
 				else
 				{
-					array_push($ids, $value);		
-					$datos['iIdRespuesta'] = $value;
-					$datos['iIdUsuario'] = $usid;
-					if(isset($archivo[substr($key, 5)])) $datos['vArchivo'] = $archivo[substr($key, 5)];
-					else $datos['vArchivo'] = "";
-					//var_dump($datos);
-					$inserta = $model->guarda_respuestas($datos);
+					if(is_array($value)) 
+					{
+						for ($i=0; $i < count($value); $i++) {
+
+							array_push($ids, $value[$i]);		
+							$datos['iIdRespuesta'] = $value[$i];
+							$datos['iIdUsuario'] = $usid;
+							if(isset($archivo[substr($key, 5)])) $datos['vArchivo'] = $archivo[substr($key, 5)];
+							else $datos['vArchivo'] = "";
+							//var_dump($datos);
+							$inserta = $model->guarda_respuestas($datos);
+						}
+					}
+					else 
+					{
+
+						array_push($ids, $value);		
+						
+						$val_resp = $model->valor_opcion($value);
+
+						$datos['iCalificacion'] = $val_resp[0]->vValor;
+						$datos['iIdRespuesta'] = $value;
+						$datos['iIdUsuario'] = $usid;
+						if(isset($archivo[substr($key, 5)])) $datos['vArchivo'] = $archivo[substr($key, 5)];
+						else $datos['vArchivo'] = "";
+						//var_dump($datos);
+						$inserta = $model->guarda_respuestas($datos);
+					}
+					
 
 				}
 				

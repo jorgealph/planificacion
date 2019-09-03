@@ -112,7 +112,10 @@
                                                 </div>';
                                                 $pregid = $vpreg->iIdPregunta;
                                                 echo '<div class="col-md-12"><div class="preg_'.$pregid.'">';
-                                            }
+                                            }                                            
+
+                                            if($vpreg->iTipoPregunta==3) { $tipo_el = 'checkbox'; $ar = '[]'; }
+                                            else { $tipo_el = 'radio'; $ar = ''; }
 
                                             if(in_array($vpreg->iIdRespuesta, $resp_us)) $check = 'checked';
                                             else 
@@ -124,8 +127,8 @@
                                             
 
                                             echo '
-                                            <div class="custom-control custom-radio">
-                                                <input '.$check.' '.$dis.' type="radio" id="op_'.$vpreg->iIdRespuesta.'" name="preg_'.$vpreg->iIdPregunta.'" class="custom-control-input" value="'.$vpreg->iIdRespuesta.'">
+                                            <div class="custom-control custom-'.$tipo_el.'">
+                                                <input '.$check.' '.$dis.' type="'.$tipo_el.'" id="op_'.$vpreg->iIdRespuesta.'" name="preg_'.$vpreg->iIdPregunta.$ar.'" class="custom-control-input" value="'.$vpreg->iIdRespuesta.'">
                                                 <label class="custom-control-label" for="op_'.$vpreg->iIdRespuesta.'">'.$vpreg->vOpcion.'</label>';
                                                 if($vpreg->iOtro == 1)
                                                 {
@@ -141,7 +144,7 @@
                                         }
                                         if(count($resp_us) == 0) echo '<button type="submit" style="margin-top: 4%" class="btn btn-primary">Guardar</button>';
                                     }
-                                    else echo '<h2>El cuestionario aún no se encuentra disponible</h2>'                                 ;
+                                    else echo '<h2>El cuestionario aún no se encuentra disponible</h2>';
                                     ?>                                    
                                     
                                 </div>
@@ -284,6 +287,10 @@
                     
                     if(data==1) {
                         $("input[type='radio']").each(function(i) {
+                            $(this).attr('disabled', 'disabled');
+                        });
+
+                        $("input[type='checkbox']").each(function(i) {
                             $(this).attr('disabled', 'disabled');
                         });
 

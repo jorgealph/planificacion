@@ -77,6 +77,8 @@ $route['guardar_preg'] = 'C_cuestionario/guardar_pregunta';
 $route['actualiza_preg'] = 'C_cuestionario/actualizar_pregunta';
 $route['modifica_preg'] = 'C_sitio/modificar_pregunta';
 
+$route['responder'] = 'C_sitio/resp_cuestionario';
+
 
 $route['listado-respuestas'] = 'C_sitio/respuestas';
 $route['elimina_resp'] = 'C_cuestionario/eliminar_resp';

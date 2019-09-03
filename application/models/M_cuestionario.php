@@ -9,17 +9,23 @@ class M_cuestionario extends CI_Model {
 		$this->db = $this->load->database('default', TRUE);
 	}
 
-	public function carga_preguntas($op=0,$id=0)
+	public function carga_preguntas($op=0,$id=0,$cuestid=0)
 	{
 		if($op==0)
 		{
+			if($cuestid > 0) 
+			{
+				$this->db->select('p.iIdCuestionario');
+				$this->db->where('p.iIdCuestionario',$cuestid);				
+			}
 
 			$this->db->select('p.iIdPregunta, p.vPregunta, p.iPonderacion,p.iEvidencia, p.iTipoPregunta ,o.iIdOpcion, o.vOpcion, o.iOtro, r.iIdRespuesta');
 			$this->db->from('iplan_preguntas p');
-			$this->db->join('iplan_respuestas r','p.iIdPregunta = r.iIdPregunta and r.iActivo = 1', 'LEFT');
-			$this->db->join('iplan_opciones o','r.iIdOpcion = o.iIdOpcion and o.iActivo = 1', 'LEFT');
+			$this->db->join('iplan_respuestas r','p.iIdPregunta = r.iIdPregunta and r.iActivo = 1', 'INNER');
+			$this->db->join('iplan_opciones o','r.iIdOpcion = o.iIdOpcion and o.iActivo = 1', 'INNER');
 			$this->db->where('p.iActivo',1);
 			$this->db->order_by('p.iIdPregunta', 'ASC');
+
 		}
 		elseif($op==1)
 		{
@@ -33,7 +39,7 @@ class M_cuestionario extends CI_Model {
 		$query = $this->db->get();
 		if($query!=false) return $query->result();
 		else return false;
-	}
+	}	
 
 	public function elimina_preg($pregid)
 	{
@@ -164,6 +170,18 @@ class M_cuestionario extends CI_Model {
 		$this->db->join('iplan_respuestas r ','ru.iIdRespuesta = r.iIdRespuesta','LEFT');
 		$this->db->where('ru.iIdUsuario',$usid);
 		$this->db->where('r.iIdPregunta',$pregid);
+
+		$query = $this->db->get();
+		if($query!=false) return $query->result();
+		else return false;
+	}
+
+	public function valor_opcion($op)
+	{
+		$this->db->select('r.iIdPregunta,r.iIdOpcion,o.vOpcion,o.vValor');
+		$this->db->from('iplan_respuestas r');
+		$this->db->join('iplan_opciones o','r.iIdOpcion = o.iIdOpcion','INNER');
+		$this->db->where('r.iIdRespuesta', $op);
 
 		$query = $this->db->get();
 		if($query!=false) return $query->result();
