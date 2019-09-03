@@ -351,7 +351,7 @@ class C_cuestionario extends CI_Controller {
 	{
 		if(isset($_POST['iIdCuestionario']) && !empty($_POST['iIdCuestionario']))
 		{
-			$datos = array(	'vPregunta' => '', 'iTipoPregunta' => 0,'iIdCuestionario' => $this->input->post('iIdCuestionario'));
+			$datos = array(	'vPregunta' => '', 'iTipoPregunta' => 0, 'iEvidencia'=> 1,'iIdCuestionario' => $this->input->post('iIdCuestionario'));
 
 			$con = $this->mc->iniciar_transaccion();
 
@@ -367,10 +367,10 @@ class C_cuestionario extends CI_Controller {
 			$iIdOpcion3 = $this->mc->insertar_registro('iplan_opciones',$opcion3,$con);
 			$iIdOpcion4 = $this->mc->insertar_registro('iplan_opciones',$opcion4,$con);
 
-			$rango1 = array( 'vValor' => 0 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => 0, 'iLimiteMax' => 0);
-			$rango2 = array( 'vValor' => 1 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => 0, 'iLimiteMax' => 0);
-			$rango3 = array( 'vValor' => 2 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => 0, 'iLimiteMax' => 0);
-			$rango4 = array( 'vValor' => 3 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => 0, 'iLimiteMax' => 0);
+			$rango1 = array( 'vValor' => 0 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => '', 'iLimiteMax' => 0);
+			$rango2 = array( 'vValor' => 1 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => '', 'iLimiteMax' => 0);
+			$rango3 = array( 'vValor' => 2 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => '', 'iLimiteMax' => 0);
+			$rango4 = array( 'vValor' => 3 , 'iIdPregunta' => $iIdPregunta, 'iLimiteMin' => '', 'iLimiteMax' => 0);
 			
 
 			$iIdRango1 = $this->mc->insertar_registro('iplan_rangos',$rango1,$con);
@@ -467,6 +467,10 @@ class C_cuestionario extends CI_Controller {
 		$sel3 = ($p->iTipoPregunta == 2) ? 'selected':'';
 		$sel4 = ($p->iTipoPregunta == 3) ? 'selected':'';
 
+		$sel1_e = ($p->iEvidencia == 0) ? 'selected':'';
+		$sel2_e = ($p->iEvidencia == 1) ? 'selected':'';
+
+
 		$html = '<div class="card" id="div-pregunta-'.$p->iIdPregunta.'"> 
 					<div class="card-body">
 					<form name="form-preg'.$p->iIdPregunta.'" id="form-preg'.$p->iIdPregunta.'">
@@ -482,7 +486,7 @@ class C_cuestionario extends CI_Controller {
 	                        </div>
 	                    </div>
 	                    <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-md-8">
                                  <div class="form-group">
                                     <label for="iTipo"> Tipo de pregunta: <span class="text-danger">*</span> </label>
                                     <select name="iTipo" id="iTipo" class="form-control" onchange="cambiarTipoPregunta('.$p->iIdPregunta.');">
@@ -490,6 +494,15 @@ class C_cuestionario extends CI_Controller {
                                         <option value="1" '.$sel2.'>Dicotómica</option>
                                         <option value="2" '.$sel3.'>Abierta</option>
                                         <option value="3" '.$sel4.'>Selección multiple</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                 <div class="form-group">
+                                    <label for="iEvidencia">¿El usuario debe adjuntar evidencia?: <span class="text-danger">*</span> </label>
+                                    <select name="iEvidencia" id="iEvidencia" class="form-control" onchange="cambiarTipoPregunta('.$p->iIdPregunta.');">
+                                        <option value="0" '.$sel1_e.'>No</option>
+                                        <option value="1" '.$sel2_e.'>Sí</option>
                                     </select>
                                 </div>
                             </div>  
@@ -519,7 +532,7 @@ class C_cuestionario extends CI_Controller {
 		$query = $this->mc->rangos($iIdPregunta);
 		$query = $query->result();
 		$html .=  '<div class="row">
-						<div class="col-md-12">Valor de las preguntas</b></div>
+						<div class="col-md-12"><small>Indique el el número de opciones que deben seleccionarse para cada puntaje</small></b></div>
 					</div>';
 		foreach ($query as $p)
 		{
@@ -602,6 +615,7 @@ class C_cuestionario extends CI_Controller {
         					<input type="hidden" name="iIdOpcion" id="iIdOpcion" value="'.$p->iIdOpcion.'">
                             <input type="checkbox" class="custom-control-input">
                             <label class="custom-control-label" for="customCheck3"><input type="text" class="form-control" name="vOpcion" id="vOpcion" value="'.$p->vOpcion.'" onblur="guardarTextoOpcion('.$p->iIdOpcion.');"></label> <i style="cursor:pointer;" class="fas fa-times" title="Eliminar opción" onclick="eliminarOpcion('.$p->iIdOpcion.','.$iIdPregunta.');"></i>
+                            <br><small><input type="checkbox"> Requiere un campo de texto</small>
                         </div>
                         </div>
                         </form>';
