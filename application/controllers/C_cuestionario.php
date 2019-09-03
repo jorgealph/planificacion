@@ -608,6 +608,7 @@ class C_cuestionario extends CI_Controller {
 
             if($p->iTipoPregunta == 3)	// Selección múltiple (check)
 			{
+				$checked = ($p->iOtro == 1) ? 'checked':'';
 				$bandera = true;
             	$html.= '<form name="form-op'.$p->iIdOpcion.'" id="form-op'.$p->iIdOpcion.'">
             			<div class="form-group">
@@ -615,7 +616,7 @@ class C_cuestionario extends CI_Controller {
         					<input type="hidden" name="iIdOpcion" id="iIdOpcion" value="'.$p->iIdOpcion.'">
                             <input type="checkbox" class="custom-control-input">
                             <label class="custom-control-label" for="customCheck3"><input type="text" class="form-control" name="vOpcion" id="vOpcion" value="'.$p->vOpcion.'" onblur="guardarTextoOpcion('.$p->iIdOpcion.');"></label> <i style="cursor:pointer;" class="fas fa-times" title="Eliminar opción" onclick="eliminarOpcion('.$p->iIdOpcion.','.$iIdPregunta.');"></i>
-                            <br><small><input type="checkbox"> Requiere un campo de texto</small>
+                            <br><small><input onchange="guardarOtro('.$p->iIdOpcion.');" type="checkbox" name="iOtro" '.$checked.'> Requiere un campo de texto</small>
                         </div>
                         </div>
                         </form>';
@@ -689,6 +690,17 @@ class C_cuestionario extends CI_Controller {
 
 			if($this->mc->terminar_transaccion($con)) echo '1';
 			else echo 'Los datos no puedieron actualizarse';
+		}
+	}
+
+	public function guardar_otro()
+	{
+		if(isset($_POST['iIdOpcion']) && !empty($_POST['iIdOpcion']))
+		{
+			$datos['iOtro'] = (isset($_POST['iOtro'])) ? 1:0;
+			$where['iIdOpcion'] = $this->input->post('iIdOpcion');
+
+			$this->mc->actualizar_registro('iplan_opciones',$where,$datos);
 		}
 	}
 
