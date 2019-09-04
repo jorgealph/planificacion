@@ -50,9 +50,7 @@
             <!-- ============================================================== -->
             <div class="page-breadcrumb">
                 <div class="row">
-                    <div class="col-5 align-self-center">
-                        
-                    </div>
+                    <div class="col-12 text-right"><button class="btn btn-white" type="button" onclick="regresar(event);"><i class="fas fa-arrow-alt-circle-left"></i>&nbsp;Regresar</button></div>
                 </div>
             </div>
        
@@ -145,7 +143,7 @@
     <script src="<?=base_url();?>assets/libs/sweetalert2/dist/sweetalert2.all.min.js"></script>
     <script src="<?=base_url();?>assets/libs/sweetalert2/sweet-alert.init.js"></script>
 
-    <script type="text/javascript">        
+    <script type="text/javascript">
         var valida_form = $('#form-cuestionario').validate({
       //ignore: [],
           rules: {
@@ -160,6 +158,12 @@
             guardarCuestionario();
           }
         }); 
+
+        function regresar(e){
+            e.preventDefault();
+            window.location.href = "<?=base_url();?>listado-cuestionarios";
+
+        }
 
         function actualizarCuestionario(){
             $.post('<?=base_url();?>C_cuestionario/guardar_cuestionario', $('#form-cuestionario').serialize(), function(resp){
@@ -262,18 +266,20 @@
         }
 
         function eliminarPregunta(iIdPregunta){
-            $.post('<?=base_url();?>C_cuestionario/eliminar_pregunta', 'iIdPregunta='+iIdPregunta, function(resp){
-                if(resp == 1){
-                    $("#div-pregunta-"+iIdPregunta).remove();    
-                }else {
-                    Swal.fire({
-                      type: 'error',
-                      title: 'Error',
-                      text: resp
-                    });
-                }
-                
-            });
+            if(confirm('¿Realmente desea eliminar esta pregunta?')){
+                $.post('<?=base_url();?>C_cuestionario/eliminar_pregunta', 'iIdPregunta='+iIdPregunta, function(resp){
+                    if(resp == 1){
+                        $("#div-pregunta-"+iIdPregunta).remove();    
+                    }else {
+                        Swal.fire({
+                          type: 'error',
+                          title: 'Error',
+                          text: resp
+                        });
+                    }
+                    
+                });
+            }
         }
 
         function eliminarOpcion(iIdOpcion,iIdPregunta){

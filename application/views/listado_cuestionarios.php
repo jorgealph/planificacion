@@ -90,7 +90,7 @@
     <!-- apps -->
     <script src="<?=base_url();?>dist/js/app.min.js"></script>
     <script src="<?=base_url();?>dist/js/app.init.horizontal.js"></script>
-    <script src="<?=base_url();?>dist/js/app-style-switcher.horizontal.js"></script>
+    <!--<script src="<?=base_url();?>dist/js/app-style-switcher.horizontal.js"></script>-->
     <!-- slimscrollbar scrollbar JavaScript -->
     <script src="<?=base_url();?>assets/libs/perfect-scrollbar/dist/perfect-scrollbar.jquery.min.js"></script>
     <!--Wave Effects -->
@@ -121,17 +121,19 @@
 
         function eliminarCuestionario(id){
             //var arch = $('#archivo').val();
-            $.post('<?=base_url();?>C_cuestionario/eliminar_cuestionario', 'id='+id, function(resp){
-                if(resp == 1){
-                    location.reload();
-                } else {
-                    Swal.fire({
-                      type: 'error',
-                      title: 'Error',
-                      text: resp
-                    });
-                }
-            });
+            if(confirm('¿Realmente desea eliminar este cuestionario?')){
+                $.post('<?=base_url();?>C_cuestionario/eliminar_cuestionario', 'id='+id, function(resp){
+                    if(resp == 1){
+                        location.reload();
+                    } else {
+                        Swal.fire({
+                          type: 'error',
+                          title: 'Error',
+                          text: resp
+                        });
+                    }
+                });
+            }
         }
 
     </script>

@@ -101,7 +101,7 @@ $(function() {
     // ============================================================== 
     // Last month earning
     // ==============================================================
-    var sparklineLogin = function() {
+    /*var sparklineLogin = function() {
         $('.lastmonth').sparkline([6, 10, 9, 11, 9, 10, 12], {
             type: 'bar',
             height: '35',
@@ -120,6 +120,7 @@ $(function() {
         sparkResize = setTimeout(sparklineLogin, 500);
     });
     sparklineLogin();
+    */
 
     // ============================================================== 
     // This is for the innerleft sidebar
