@@ -107,7 +107,7 @@
                                                         <div class="col-md-5"><h4 class="card-title">'.$vpreg->iIdPregunta.'.- '.$vpreg->vPregunta.'</h4></div>
                                                         <div class="col-md-4">
                                                             <label for="pond_1">Calificación</label>
-                                                            <input type="text" id="calif_'.$vpreg->iIdPregunta.'" name="calif_'.$vpreg->iIdPregunta.'" value="'.$vpreg->iCalificacion.'">
+                                                            <input type="text" id="calif_'.$vpreg->iIdPregunta.'" name="calif_'.$vpreg->iIdPregunta.'" value="'.$vpreg->iCalificacion.'" disabled>
                                                         </div>';
                                                         
                                                         if($vpreg->iEvidencia==1)
@@ -171,7 +171,7 @@
                                         }
                                     }                                    
                                     ?>
-                                    <button type="submit" style="margin-top: 4%" class="btn btn-primary">Guardar</button>
+                                    <!--<button type="submit" style="margin-top: 4%" class="btn btn-primary">Guardar</button>-->
                                 </div>
                             </div>
                         </form>
@@ -248,7 +248,7 @@
           submitHandler: function(form) {
             console.log(form);          
           }
-        });*/
+        });
         (function() {
             $("#form_cuestionario").validate({
                 submitHandler: function(form) {
@@ -293,6 +293,7 @@
                 }
             });
         }
+        */
         
 
     </script>

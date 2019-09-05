@@ -25,6 +25,7 @@ class M_cuestionario extends CI_Model {
 			$this->db->join('iplan_opciones o','r.iIdOpcion = o.iIdOpcion and o.iActivo = 1', 'INNER');
 			$this->db->where('p.iActivo',1);
 			$this->db->order_by('p.iIdPregunta', 'ASC');
+			$this->db->order_by('o.iIdOpcion', 'ASC');
 
 		}
 		elseif($op==1)
@@ -54,6 +55,23 @@ class M_cuestionario extends CI_Model {
 		return $this->db->insert('iplan_resp_usuario',$datos);
 	}
 
+	public function guarda_calif($datos)
+	{
+		return $this->db->insert('iplan_calif',$datos);
+	}
+
+	public function rangos_respuestas($iIdPregunta)
+	{
+		$this->db->select('ra.iLimiteMin,ra.vValor');
+		$this->db->from('iplan_rangos ra');
+		$this->db->where('ra.iIdPregunta',$iIdPregunta);
+		$this->db->order_by('ra.iLimiteMin','ASC');
+
+		$query = $this->db->get();
+		if($query!=false) return $query->result();
+		else return false;
+	}
+
 	public function guarda_pregunta($datos)
 	{
 		$this->db->insert('iplan_preguntas', $datos);
@@ -66,11 +84,18 @@ class M_cuestionario extends CI_Model {
 		return $this->db->insert('iplan_respuestas', $datos_r);
 	}
 
-	public function resp_usuario($usid)
+	public function resp_usuario($usid, $cuestid)
 	{
-		$this->db->select('iIdRespuesta,vRespuesta,vArchivo');
+		/*$this->db->select('iIdRespuesta,vRespuesta,vArchivo');
 		$this->db->from('iplan_resp_usuario');
-		$this->db->where('iIdUsuario',$usid);
+		$this->db->where('iIdUsuario',$usid);*/
+
+		$this->db->select('re.iIdRespuesta,re.vRespuesta,re.vArchivo');
+		$this->db->from('iplan_resp_usuario re');
+		$this->db->join('iplan_respuestas r','re.iIdRespuesta = r.iIdRespuesta','INNER');
+		$this->db->join('iplan_preguntas p','r.iIdPregunta = p.iIdPregunta','INNER');
+		$this->db->where('re.iIdUsuario',$usid);
+		$this->db->where('p.iIdCuestionario',$cuestid);
 
 		$query = $this->db->get();
 		if($query!=false) return $query->result();
@@ -151,11 +176,50 @@ class M_cuestionario extends CI_Model {
 
 	public function cuest_usuario()
 	{
-		$this->db->select('u.iIdUsuario, u.vNombreUsuario, u.vCorreo, vEntidad, vMunicipio, iTipo, (select r.iIdUsuario from iplan_resp_usuario r where r.iIdUsuario = u.iIdUsuario group by r.iIdUsuario) as resp, ( select SUM(r.iCalificacion) from iplan_resp_usuario r where r.iIdUsuario = u.iIdUsuario group by r.iIdUsuario) as calif');
+		$this->db->select('u.iIdUsuario, u.vNombreUsuario, u.vCorreo, vEntidad, vMunicipio, iTipo');
 		$this->db->from('iplan_usuarios u');
 		$this->db->where('u.iActivo',1);
 		$this->db->where('u.iTipoUsuario',3);
-		
+
+		/*$this->db->select('u.iIdUsuario, u.vNombreUsuario, u.vCorreo, vEntidad, vMunicipio, iTipo, ( select r.iIdUsuario from iplan_resp_usuario r where r.iIdUsuario = u.iIdUsuario group by r.iIdUsuario ) as resp, ( select SUM(c.vCalificacion) from iplan_calif c where c.iIdUsuario = u.iIdUsuario group by c.iIdUsuario ) as calif');
+		$this->db->from('iplan_usuarios u');
+		$this->db->where('u.iActivo',1);
+		$this->db->where('u.iTipoUsuario',3);*/
+
+		/*
+		$this->db->select('c.iIdUsuario,SUM(c.vCalificacion),p.iIdPregunta, p.iIdCuestionario, u.iIdUsuario, u.vNombreUsuario, u.vCorreo, u.vEntidad, u.vMunicipio, u.iTipo');
+		$this->db->from('iplan_usuarios u');
+		$this->db->join('iplan_calif c','c.iIdUsuario = u.iIdUsuario','LEFT');
+		$this->db->join('iplan_preguntas p','c.iIdPregunta = p.iIdPregunta','LEFT');
+		$this->db->group_by('c.iIdUsuario, p.iIdCuestionario'); 
+		*/
+
+		$query = $this->db->get();
+		if($query!=false) return $query->result();
+		else return false;
+	}
+
+	public function resp_us($usid)
+	{
+		$this->db->select('r.iIdUsuario'); 
+		$this->db->from('iplan_resp_usuario r');
+		$this->db->where('r.iIdUsuario',$usid);
+		$this->db->group_by('r.iIdUsuario ');
+
+		$query = $this->db->get();
+		if($query!=false) return $query->result();
+		else return false;
+	}
+
+	public function calif_us($usid)
+	{
+		$this->db->select('SUM(c.vCalificacion) as calif, p.iIdCuestionario, cu.vCuestionario');
+		$this->db->from('iplan_calif c') ;
+		$this->db->join('iplan_preguntas p', 'c.iIdPregunta = p.iIdPregunta', 'INNER');
+		$this->db->join('iplan_cuestionarios cu', 'p.iIdCuestionario = cu.iIdCuestionario', 'INNER');
+		$this->db->where('c.iIdUsuario', $usid);
+		$this->db->group_by('c.iIdUsuario, p.iIdCuestionario');
+
 		$query = $this->db->get();
 		if($query!=false) return $query->result();
 		else return false;
@@ -197,14 +261,26 @@ class M_cuestionario extends CI_Model {
 		return $query;
 	}
 
+	public function obtener_calif($pregid,$usid)
+	{	
+		$this->db->select('vCalificacion');
+		$this->db->from('iplan_calif');
+		$this->db->where('iIdUsuario',$usid);
+		$this->db->where('iIdPregunta',$pregid);
+		$this->db->group_by('iIdPregunta');
+		
+		$query = $this->db->get();
+		if($query!=false) return $query->result();
+		else return false;
+	}
+
 	public function inserta_archivo($datos,$respid,$usid)
 	{
-		
 		$this->db->where('iIdRespuesta',$respid);
 		$this->db->where('iIdUsuario',$usid);
 		$query = $this->db->update('iplan_resp_usuario',$datos);
 		return $query;
-	}
+	}	
 
 	/*	Funciones para usar transacciones
 	======================================
@@ -282,6 +358,18 @@ class M_cuestionario extends CI_Model {
 		$this->db->from('iplan_cuestionarios');
 		$this->db->where('iActivo',1);
 		if($tipo_proced > 0) $this->db->where('iTipo',$tipo_proced);
+
+		$query = $this->db->get();
+		if($query!=false) return $query->result();
+		else return false;
+	}
+
+	public function preguntas_cuestionario($cuestid)
+	{
+		$this->db->select('iIdPregunta');
+		$this->db->from('iplan_preguntas');
+		$this->db->where('iIdCuestionario', $cuestid);
+		$this->db->where('iActivo', 1);
 
 		$query = $this->db->get();
 		if($query!=false) return $query->result();

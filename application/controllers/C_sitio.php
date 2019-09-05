@@ -183,45 +183,50 @@ class C_sitio extends CI_Controller {
 	public function resp_cuestionario()
 	{
 		$cuestid = $this->input->get('cuestid', TRUE);
-
+		$datos['cuestid'] = $cuestid;
 		$usid = $_SESSION['usuario']['usid'];		
 
-		if(!isset($_SESSION['usuario'])) header('Location: '.base_url());
-		else
-		{	
-			$model = new M_cuestionario();
+		if($cuestid > 0)
+		{
+			if(!isset($_SESSION['usuario'])) header('Location: '.base_url());
+			else
+			{	
+				$model = new M_cuestionario();
 
-			$preguntas = $model->carga_preguntas(0,0,$cuestid);
-			if($preguntas!=false && count($preguntas) > 0)
-			{
-				$datos['preguntas'] = $preguntas;
-				foreach ($preguntas as $vpreg) {
-					$pregid = $vpreg->iIdPregunta;
-					$resp_cal = $model->obtener_resp($pregid, $usid, 1);
-					if($resp_cal!=false && count($resp_cal) > 0)
-					{
-						$vpreg->iCalificacion = $resp_cal[0]->iCalificacion;
-						$vpreg->vArchivo = $resp_cal[0]->vArchivo;						
+				$preguntas = $model->carga_preguntas(0,0,$cuestid);
+				if($preguntas!=false && count($preguntas) > 0)
+				{
+					$datos['preguntas'] = $preguntas;
+					foreach ($preguntas as $vpreg) {
+						$pregid = $vpreg->iIdPregunta;
+						$resp_cal = $model->obtener_resp($pregid, $usid, 1);
+						if($resp_cal!=false && count($resp_cal) > 0)
+						{
+							$vpreg->vArchivo = $resp_cal[0]->vArchivo;
+
+
+							$cal = $model->obtener_calif($pregid,$usid);
+							if($cal!=false && count($cal) > 0) $vpreg->iCalificacion = $cal[0]->vCalificacion;
+							else $vpreg->iCalificacion = 0;
+						}
+						else 
+						{				
+							$vpreg->iCalificacion = -1;
+							$vpreg->vArchivo = '';
+						}
 					}
-					else 
-					{
-						$vpreg->iCalificacion = 0;
-						$vpreg->vArchivo = '';
-					}
+
 				}
+				else $datos['preguntas'] = false;
 
-			}
-			else $datos['preguntas'] = false;
+				$resp = $model->resp_usuario($usid, $cuestid);
+				if($resp!=false && count($resp) > 0) $datos['respuestas'] = $resp;
+				else $datos['respuestas'] = false;
 
-
-
-
-			$resp = $model->resp_usuario($usid);
-			if($resp!=false && count($resp) > 0) $datos['respuestas'] = $resp;
-			else $datos['respuestas'] = false;
-
-			$this->load->view('cuestionario',$datos);
+				$this->load->view('cuestionario',$datos);
+			}			
 		}
+		else header('Location: '.base_url().'cuestionario');
 	}
 
 	public function calificar()
@@ -229,8 +234,60 @@ class C_sitio extends CI_Controller {
 		if(!isset($_SESSION['usuario'])) header('Location: '.base_url());
 		else
 		{	
+			$cuest_us = array();
+
 			$model = new M_cuestionario();
-			$datos['usuarios'] = $model->cuest_usuario();
+			$usuarios = $model->cuest_usuario();
+			if($usuarios!=false && count($usuarios) > 0)
+			{
+				foreach ($usuarios as $vus) {
+					
+					
+					$resp_us = $model->resp_us($vus->iIdUsuario);
+					if($resp_us!=false && count($resp_us) > 0) $r = $resp_us[0]->iIdUsuario;
+					else $r = 0;
+
+					$cal_us = $model->calif_us($vus->iIdUsuario);
+					if($cal_us!=false && count($cal_us) > 0)
+					{						
+						foreach ($cal_us as $vcal) {
+							
+							$d = array(
+								'iIdUsuario'=> $vus->iIdUsuario,
+								'vNombreUsuario'=> $vus->vNombreUsuario,
+								'vCorreo'=> $vus->vCorreo,
+								'vEntidad'=> $vus->vEntidad,
+								'vMunicipio'=> $vus->vMunicipio,
+								'iTipo'=> $vus->iTipo,
+								'resp' => $r,
+								'calif' => $vcal->calif,
+								'cuestid' => $vcal->iIdCuestionario,
+								'nom_cuest' => $vcal->vCuestionario
+							);
+
+							array_push($cuest_us, $d);
+						}					
+					}
+					else
+					{
+						$d = array(
+								'iIdUsuario'=> $vus->iIdUsuario,
+								'vNombreUsuario'=> $vus->vNombreUsuario,
+								'vCorreo'=> $vus->vCorreo,
+								'vEntidad'=> $vus->vEntidad,
+								'vMunicipio'=> $vus->vMunicipio,
+								'iTipo'=> $vus->iTipo,
+								'resp' => $r,
+								'calif' => 0,
+								'cuestid' => 0,
+								'nom_cuest' => ''
+							);
+
+							array_push($cuest_us, $d);
+					}
+				}
+			}
+			$datos['usuarios'] = $cuest_us;
 			$this->load->view('calificar',$datos);
 		}
 	}
@@ -238,39 +295,52 @@ class C_sitio extends CI_Controller {
 	public function calificar_usuario()
 	{
 		$usid = $this->input->get('usid', TRUE);
-		if(!isset($_SESSION['usuario'])) header('Location: '.base_url());
-		else
+		$cuestid = $this->input->get('cuestid', TRUE);
+
+		if($usid > 0 && $cuestid > 0)
 		{
-			$model = new M_cuestionario();
-			$preguntas = $model->carga_preguntas();
-
-			if($preguntas!=false && count($preguntas))
+			if(!isset($_SESSION['usuario'])) header('Location: '.base_url());
+			else
 			{
-				$datos['preguntas'] = $preguntas;
-				foreach ($preguntas as $vpreg) {
-					$pregid = $vpreg->iIdPregunta;
-					$resp_cal = $model->obtener_resp($pregid, $usid, 1);
-					if($resp_cal!=false && count($resp_cal) > 0)
-					{
-						$vpreg->iCalificacion = $resp_cal[0]->iCalificacion;
-						$vpreg->vArchivo = $resp_cal[0]->vArchivo;
-					}
-					else 
-					{
-						$vpreg->iCalificacion = 0;
-						$vpreg->vArchivo = '';
-					}
-				}				
+				$model = new M_cuestionario();
+				$preguntas = $model->carga_preguntas(0,0,$cuestid);
 
+				if($preguntas!=false && count($preguntas) > 0)
+				{
+					$datos['preguntas'] = $preguntas;
+					foreach ($preguntas as $vpreg) {
+						$pregid = $vpreg->iIdPregunta;
+
+
+
+						$cal = $model->obtener_calif($pregid,$usid);
+						if($cal!=false && count($cal) > 0) $vpreg->iCalificacion = $cal[0]->vCalificacion;
+						else $vpreg->iCalificacion = 0;
+
+
+						$resp_cal = $model->obtener_resp($pregid, $usid, 1);
+						if($resp_cal!=false && count($resp_cal) > 0)
+						{						
+							$vpreg->vArchivo = $resp_cal[0]->vArchivo;
+						}
+						else 
+						{
+							$vpreg->vArchivo = '';
+						}
+					}				
+
+				}
+				else $datos['preguntas'] = false;
+
+				$datos['usid'] = $usid;
+				$resp = $model->resp_usuario($usid, $cuestid);
+				if($resp!=false && count($resp) > 0) $datos['respuestas'] = $resp;
+				else $datos['respuestas'] = false;
+				$this->load->view('cuestionario_calif', $datos);
 			}
-			else $datos['preguntas'] = false;
-
-			$datos['usid'] = $usid;
-			$resp = $model->resp_usuario($usid);
-			if($resp!=false && count($resp) > 0) $datos['respuestas'] = $resp;
-			else $datos['respuestas'] = false;
-			$this->load->view('cuestionario_calif', $datos);
 		}
+		else header('Location: '.base_url().'calificar');
+		
 	}
 
 	

@@ -12,21 +12,9 @@
                     <div class="navbar-brand">
                         <a href="<?=base_url();?>" class="logo">
                             <!-- Logo icon -->
-                            <b class="logo-icon">
-                                <!--You can put here icon as well // <i class="wi wi-sunset"></i> //-->
-                                <!-- Dark Logo icon -->
-                                <img src="<?=base_url();?>assets/images/logo-icon.png" alt="homepage" class="dark-logo" />
-                                <!-- Light Logo icon -->
-                                <img src="<?=base_url();?>assets/images/logo-light-icon.png" alt="homepage" class="light-logo" />
-                            </b>
-                            <!--End Logo icon -->
-                            <!-- Logo text -->
-                            <span class="logo-text">
-                                <!-- dark Logo text -->
-                                <img src="<?=base_url();?>assets/images/logo-text.png" alt="homepage" class="dark-logo" />
-                                <!-- Light Logo text -->
-                                <img src="<?=base_url();?>assets/images/logo-light-text.png" class="light-logo" alt="homepage" />
-                            </span>
+                            
+
+                            <img src="<?=base_url();?>assets/images/logo_giz.png" class="dark-logo" alt="homepage" />
                         </a>
                     </div>
                     <!-- ============================================================== -->
@@ -70,7 +58,7 @@
                         <!-- ============================================================== -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle waves-effect waves-dark pro-pic" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <img src="<?=base_url();?>assets/images/users/2.jpg" alt="user" class="rounded-circle" width="40">
+                                <!--<img src="<?=base_url();?>assets/images/users/2.jpg" alt="user" class="rounded-circle" width="40">-->
                                 <span class="m-l-5 font-medium d-none d-sm-inline-block"><?php echo $_SESSION['usuario']['nom']; ?> <i class="mdi mdi-chevron-down"></i></span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right user-dd animated flipInY">
@@ -79,7 +67,7 @@
                                 </span>
                                 <div class="d-flex no-block align-items-center p-15 bg-primary text-white m-b-10">
                                     <div class="">
-                                        <img src="<?=base_url();?>assets/images/users/2.jpg" alt="user" class="rounded-circle" width="60">
+                                        <!--<img src="<?=base_url();?>assets/images/users/2.jpg" alt="user" class="rounded-circle" width="60">-->
                                     </div>
                                     <div class="m-l-10">
                                         <h4 class="m-b-0"><?php echo $_SESSION['usuario']['nom']; ?></h4>

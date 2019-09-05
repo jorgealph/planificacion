@@ -17,17 +17,17 @@ class C_cuestionario extends CI_Controller {
 	{		
 		$model = new M_cuestionario();
 		$usid = $_SESSION['usuario']['usid'];
+		$cuestid = $this->input->post('cuestid', TRUE);
+
 		$datos = array('iRevisado' => 0, 'iCalificacion' => 0);
 		if(is_array($_POST) && !empty($_POST)) 		
 		{
 			$archivo = array();
 			$res = array();
 			$ids = array();
+			$idpreg = array();
 			//var_dump($_POST);
-			foreach ($_POST as $key => $value) {	
-				//echo 'key: '.$key;
-				
-
+			foreach ($_POST as $key => $value) {
 				
 				$c = substr($key, 0, 3);			
 
@@ -44,43 +44,125 @@ class C_cuestionario extends CI_Controller {
 				}
 				else
 				{
-					if(is_array($value)) 
+					if($key!='cuestid')
 					{
-						for ($i=0; $i < count($value); $i++) {
+						if(!in_array(substr($key, 5), $idpreg)) array_push($idpreg, substr($key, 5));
 
-							array_push($ids, $value[$i]);		
-							$datos['iIdRespuesta'] = $value[$i];
+						if(is_array($value)) 
+						{
+							$calif_r = 0;
+							$t_resp = count($value);
+							for ($i=0; $i < count($value); $i++) {
+
+								array_push($ids, $value[$i]);		
+								$datos['iIdRespuesta'] = $value[$i];
+								$datos['iIdUsuario'] = $usid;
+								if(isset($archivo[substr($key, 5)])) $datos['vArchivo'] = $archivo[substr($key, 5)];
+								else $datos['vArchivo'] = "";
+								//var_dump($datos);
+								$inserta = $model->guarda_respuestas($datos);
+							}
+
+							
+							$rangos = $model->rangos_respuestas(substr($key, 5));										
+
+							/*if($t_resp >= $rangos[0]->iLimiteMin) 
+							{
+								if($t_resp >= $rangos[1]->iLimiteMin)
+								{
+									if($t_resp >= $rangos[2]->iLimiteMin)
+									{
+										if($t_resp >= $rangos[3]->iLimiteMin)
+										{
+											$calif_r = $rangos[3]->vValor;
+										}									
+									}
+									else
+									{
+										$calif_r = $rangos[2]->vValor;
+									}
+								}
+								else 
+								{
+									$calif_r = $rangos[1]->vValor;
+								}
+							}
+							else 
+							{
+								$calif_r = $rangos[0]->vValor;
+							}*/
+
+
+							if($t_resp >= $rangos[3]->iLimiteMin)
+							{
+								$calif_r = $rangos[3]->vValor;
+							}
+							elseif($t_resp >= $rangos[2]->iLimiteMin)
+							{
+								$calif_r = $rangos[2]->vValor;
+							}
+							elseif($t_resp >= $rangos[1]->iLimiteMin)
+							{
+								$calif_r = $rangos[1]->vValor;
+							}
+							else 
+							{
+								$calif_r = $rangos[0]->vValor;
+							}
+							
+							$datos_cal['iIdUsuario'] = $usid;
+							$datos_cal['iIdPregunta'] = substr($key, 5);
+							$datos_cal['vCalificacion'] = $calif_r;
+
+							$calif = $model->guarda_calif($datos_cal);				
+						}
+						else 
+						{
+
+							array_push($ids, $value);		
+							$datos['iIdRespuesta'] = $value;
 							$datos['iIdUsuario'] = $usid;
 							if(isset($archivo[substr($key, 5)])) $datos['vArchivo'] = $archivo[substr($key, 5)];
 							else $datos['vArchivo'] = "";
 							//var_dump($datos);
 							$inserta = $model->guarda_respuestas($datos);
-						}
-					}
-					else 
-					{
 
-						array_push($ids, $value);		
-						
-						$val_resp = $model->valor_opcion($value);
 
-						$datos['iCalificacion'] = $val_resp[0]->vValor;
-						$datos['iIdRespuesta'] = $value;
-						$datos['iIdUsuario'] = $usid;
-						if(isset($archivo[substr($key, 5)])) $datos['vArchivo'] = $archivo[substr($key, 5)];
-						else $datos['vArchivo'] = "";
-						//var_dump($datos);
-						$inserta = $model->guarda_respuestas($datos);
+
+							$val_resp = $model->valor_opcion($value);
+							$datos_cal['iIdUsuario'] = $usid;
+							$datos_cal['iIdPregunta'] = $val_resp[0]->iIdPregunta;
+							$datos_cal['vCalificacion'] = $val_resp[0]->vValor;
+
+							$calif = $model->guarda_calif($datos_cal);
+						}						
 					}
 					
-
 				}
-				
+			
 			}
 			//var_dump($ids);
 			//var_dump($res);
 			foreach ($res as $key => $value) {
 				if(in_array($key, $ids)) $act = $model->act_resp($value,$usid,$key);
+			}
+			
+			$tpreg = $model->preguntas_cuestionario($cuestid);
+			//var_dump($idpreg);
+			//var_dump($tpreg);
+			if($tpreg!=false) 
+			{
+				foreach ($tpreg as $valpreg) {
+					//echo 'preguntaid: '.$valpreg->iIdPregunta;
+					if(!in_array($valpreg->iIdPregunta, $idpreg))
+					{
+						$d_cal['iIdUsuario'] = $usid;
+						$d_cal['iIdPregunta'] = $valpreg->iIdPregunta;
+						$d_cal['vCalificacion'] = 0;						
+
+						$calif = $model->guarda_calif($d_cal);
+					}
+				}
 			}
 		}
 		echo $inserta;

@@ -52,8 +52,9 @@
                         <form id="form_cuestionario">                            
                             <div class="card">
                                 <div class="card-body">
+                                    <input type="hidden" id="cuestid" name="cuestid" value="<?=$cuestid;?>">
                                     
-                                    <?php 
+                                    <?php                                     
                                     $resp_us = array();
                                     $resp_us_t = array();
                                     //print_r($respuestas);
@@ -81,11 +82,15 @@
                                                 echo '<div class="row" style="border-bottom: 1px dashed #cacaca; padding-bottom: 2%;">';
                                                 echo '<div class="col-md-12">
                                                     <div class="row">
-                                                        <div class="col-md-5"><h4 class="card-title">'.$vpreg->iIdPregunta.'.- '.$vpreg->vPregunta.'</h4></div>
-                                                        <div class="col-md-4">
-                                                            <label for="pond_1">Ponderación</label>
-                                                            <input type="text" id="pond_'.$vpreg->iIdPregunta.'" name="pond_'.$vpreg->iIdPregunta.'" value="'.$vpreg->iPonderacion.'" disabled>
-                                                        </div>';
+                                                        <div class="col-md-5"><h4 class="card-title">'.$vpreg->iIdPregunta.'.- '.$vpreg->vPregunta.'</h4></div>';
+
+                                                        if($vpreg->iCalificacion >= 0)
+                                                        {
+                                                            echo '<div class="col-md-4">
+                                                                <label for="calif_'.$vpreg->iIdPregunta.'">Calificación</label>
+                                                                <input type="text" id="calif_'.$vpreg->iIdPregunta.'" name="calif_'.$vpreg->iIdPregunta.'" value="'.$vpreg->iCalificacion.'" disabled>
+                                                            </div>';                                                            
+                                                        }
                                                         
                                                         if($vpreg->iEvidencia==1)
 
@@ -142,7 +147,7 @@
                                                 }                                   
                                             echo '</div>';
                                         }
-                                        if(count($resp_us) == 0) echo '<button type="submit" style="margin-top: 4%" class="btn btn-primary">Guardar</button>';
+                                        if(count($resp_us) == 0) echo '<button id="envia_enc" type="submit" style="margin-top: 4%" class="btn btn-primary">Guardar</button>';
                                     }
                                     else echo '<h2>El cuestionario aún no se encuentra disponible</h2>';
                                     ?>                                    
@@ -298,6 +303,9 @@
                             var filesCount = $('#'+this.name).fileinput('getFilesCount');
                             if(filesCount>0) $('#'+this.name).fileinput('upload');
                         });
+
+                        document.getElementById("envia_enc").remove();
+                        location.reload();
 
                     }
                 },

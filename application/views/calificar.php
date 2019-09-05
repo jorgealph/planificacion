@@ -40,7 +40,7 @@
         <!-- ============================================================== -->
         <!-- Topbar header - style you can find in pages.scss -->
         <!-- ============================================================== -->
-        <?php include('nav-bar.php'); ?>
+        <?php include('nav-bar.php'); //echo '<pre>'; print_r($usuarios); echo '</pre>'?>
 
         
         <!-- ============================================================== -->
@@ -69,19 +69,19 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
-                            <div class="card-body">                                
-                                <h6 class="card-subtitle" align="right"><a href="<?=base_url();?>agregar_usuario" class="btn waves-effect waves-light btn-info">Agregar usuario</a></h6>
+                            <div class="card-body">
                                 <div class="table-responsive">                                 
                                     <table id="zero_config" class="table table-striped table-bordered">
                                         <thead>
                                             <tr>
+                                                <th>Cuestionario</th>
                                                 <th>ID</th>
                                                 <th>Nombre usuario</th>
                                                 <th>Correo</th>
                                                 <th>Procedencia</th>
                                                 <th>Encuesta respondida</th>
                                                 <th>Calificación</th>
-                                                <th>Opciones</th>
+                                                <th>Ver cuestionario</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -90,6 +90,49 @@
 
                                             if($usuarios!=false)
                                             {
+
+                                                foreach ($usuarios as $vus) {
+                                                    switch ($vus['iTipo']) {
+                                                        case 1:                                                            
+                                                            $proced = $vus['vEntidad'];
+                                                            break;
+                                                        case 2:                                                            
+                                                            $proced = $vus['vMunicipio'];
+                                                            break;
+                                                    }
+                                                    $calif = $vus['calif']; 
+                                                    $icono = 'fas fa-check';
+                                                    /*
+                                                    if($vus->calif > 0) { $calif = $vus->calif; $icono = 'fas fa-check'; }
+                                                    else { $calif = 'Pendiente'; $icono = 'fas fa-pencil-alt'; }
+                                                    */
+
+                                                    $resp = (!empty($vus['resp']) && $vus['resp'] > 0) ? 'Si' : 'No';
+
+
+                                                    echo '<tr id="us_'.$vus['iIdUsuario'].'">
+                                                        <td>'.$vus['nom_cuest'].'</td>
+                                                        <td>'.$vus['iIdUsuario'].'</td>
+                                                        <td>'.$vus['vNombreUsuario'].'</td>
+                                                        <td>'.$vus['vCorreo'].'</td>
+                                                        <td>'.$proced.'</td>
+                                                        <td>'.$resp.'</td>
+                                                        <td>'.$calif.'</td>
+                                                        <td>';
+                                                            if($_SESSION['usuario']['tipo']==1 || $_SESSION['usuario']['tipo']==2) 
+                                                            {
+                                                                if($resp==='Si')
+                                                                {
+                                                                    echo '<a href="javascript:" title="Calificar" onclick="calif_cuest('.$vus['iIdUsuario'].','.$vus['cuestid'].');"><i class="'.$icono.'"></i></a>&nbsp&nbsp&nbsp';
+                                                                }
+                                                            } 
+
+                                                        echo '<i class=""></i></td>
+                                                    </tr>';
+                                            /*
+                                            */
+                                                }
+                                            /*
                                                 foreach ($usuarios as $vus) {
                                                     switch ($vus->iTipo) {
                                                         case 1:                                                            
@@ -99,10 +142,13 @@
                                                             $proced = $vus->vMunicipio;
                                                             break;
                                                     }
-
+                                                    $calif = $vus->calif; 
+                                                    $icono = 'fas fa-check';
+                                                    /*
                                                     if($vus->calif > 0) { $calif = $vus->calif; $icono = 'fas fa-check'; }
                                                     else { $calif = 'Pendiente'; $icono = 'fas fa-pencil-alt'; }
-
+                                                    */
+                                                    /*
                                                     $resp = (!empty($vus->resp) && $vus->resp > 0) ? 'Si' : 'No';
 
 
@@ -123,9 +169,8 @@
 
                                                         echo '<i class=""></i></td>
                                                     </tr>';
-                                            /*
-                                            */
                                                 }
+                                            */
                                             }
                                             ?>
                                         </tbody>                                        
@@ -188,13 +233,13 @@
     <script type="text/javascript">
         
 
-        function calif_cuest(usid) {
+        function calif_cuest(usid,cuestid) {
             /*$.post('<?=base_url();?>califica_us', {usid:usid}, function(resp){
                 //console.log(resp);
                 if(resp==1) { alert('Usuario eliminado con éxito'); $('#us_'+usid).remove(); }
             });*/
 
-            location.href = "<?=base_url();?>califica_us?usid="+usid;
+            location.href = "<?=base_url();?>califica_us?usid="+usid+'&cuestid='+cuestid;
         }
     </script>
 
