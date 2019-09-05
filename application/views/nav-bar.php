@@ -14,7 +14,7 @@
                             <!-- Logo icon -->
                             
 
-                            <img src="<?=base_url();?>assets/images/logo_giz.png" class="dark-logo" alt="homepage" />
+                            <img style="max-height: 62px;" src="<?=base_url();?>assets/images/logo_giz.png" class="dark-logo" alt="homepage" />
                         </a>
                     </div>
                     <!-- ============================================================== -->
