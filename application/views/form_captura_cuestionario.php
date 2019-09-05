@@ -183,6 +183,14 @@
             });
         }
 
+         function guardarRequiereEvidencia(iIdPregunta){
+            $.post('<?=base_url();?>C_cuestionario/guardar_requiere_evidencia', $('#form-preg'+iIdPregunta).serialize(), function(resp){
+                if(resp==1) { 
+                    
+                }
+            });
+        }
+
         function guardarTextoOpcion(iIdOpcion){
             $.post('<?=base_url();?>C_cuestionario/guardar_texto_opcion', $('#form-op'+iIdOpcion).serialize(), function(resp){
                 if(resp==1) { 

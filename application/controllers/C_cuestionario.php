@@ -536,6 +536,15 @@ class C_cuestionario extends CI_Controller {
 		}
 	}
 
+	function guardar_requiere_evidencia(){
+		if(isset($_POST['iIdPregunta']) && !empty($_POST['iIdPregunta']))
+		{
+			$datos['iEvidencia'] = $this->input->post('iEvidencia');
+			$where['iIdPregunta'] = $this->input->post('iIdPregunta');
+			$this->mc->actualizar_registro('iplan_preguntas',$where,$datos);
+		}
+	}
+
 	function guardar_texto_opcion(){
 		if(isset($_POST['iIdOpcion']) && !empty($_POST['iIdOpcion']))
 		{
@@ -607,7 +616,7 @@ class C_cuestionario extends CI_Controller {
                             <div class="col-md-4">
                                  <div class="form-group">
                                     <label for="iEvidencia">¿El usuario debe adjuntar evidencia?: <span class="text-danger">*</span> </label>
-                                    <select name="iEvidencia" id="iEvidencia" class="form-control" onchange="cambiarTipoPregunta('.$p->iIdPregunta.');">
+                                    <select name="iEvidencia" id="iEvidencia" class="form-control" onchange="guardarRequiereEvidencia('.$p->iIdPregunta.');">
                                         <option value="0" '.$sel1_e.'>No</option>
                                         <option value="1" '.$sel2_e.'>Sí</option>
                                     </select>
