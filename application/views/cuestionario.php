@@ -305,7 +305,7 @@
                         });
 
                         document.getElementById("envia_enc").remove();
-                        location.reload();
+                        //location.reload();
 
                     }
                 },

@@ -354,9 +354,13 @@ class C_cuestionario extends CI_Controller {
 
 	function listar_cuestionarios()
 	{
-		$datos['tabla'] = $this->tabla_cuestionarios();
-
-		$this->load->view('listado_cuestionarios',$datos);
+		if(!isset($_SESSION['usuario'])) header('Location: '.base_url());
+		else
+		{
+			$datos['tabla'] = $this->tabla_cuestionarios();
+			$this->load->view('listado_cuestionarios',$datos);
+		}
+		
 	}
 
 	function tabla_cuestionarios()
